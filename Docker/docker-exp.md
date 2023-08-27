@@ -407,33 +407,32 @@ CMD ["/root/hello"]
 Dockerfile.build
 
 ```
-FROM golang:1.11.4-alpine3.8 AS build-env
+# GOPATH要特别注意
+FROM golang:1.19 AS build-env
 ENV GO111MODULE=off
-ENV GO15VENDOREXPERIMENT=1
-ENV BUILDPATH=github.com/lattecake/hello
-RUN mkdir -p /go/src/${BUILDPATH}
-COPY ./ /go/src/${BUILDPATH}
-RUN cd /go/src/${BUILDPATH} && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go install –v
+RUN mkdir -p /go/src/go/
+COPY ./valeo/ /go/src/go/valeo/
+RUN cd /go/src/go/valeo/internal/cmd/scan && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main
 ```
 
 Dockerfile.run
 
 ```
 FROM alpine:latest
-RUN apk –no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates
 WORKDIR /root
-ADD hello .
-CMD ["./hello"]
+ADD main .
+CMD ["./main"]
 ```
 
 Build.sh
 
 ```
 #!/bin/sh
-docker build -t –rm hello:build . -f Dockerfile.build
-docker create –name extract hello:build
-docker cp extract:/go/bin/hello ./hello
+docker build --rm -t  test:build . -f Dockerfile.build
+docker create --name extract test:build
+docker cp extract:/go/src/go/valeo/internal/cmd/scan/main ./main
 docker rm -f extract
-docker build –no-cache -t –rm hello:run . -f Dockerfile.run
-rm -rf ./hello
+docker build --no-cache --rm -t test:run . -f Dockerfile.run
+rm -rf ./main
 ```
