@@ -1,5 +1,9 @@
 FROM golang:1.19 AS build-env
-ENV GO111MODULE=off
+ENV GO111MODULE=off 
 RUN mkdir -p /go/src/go/
 COPY ./valeo/ /go/src/go/valeo/
-RUN cd /go/src/go/valeo/internal/cmd/scan && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main
+RUN cd /go/src/go/valeo/internal/cmd/scan && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/src/main_scan
+RUN cd /go/src/go/valeo/internal/cmd/copy && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/src/main_copy
+RUN cd /go/src/go/valeo/internal/cmd/frame && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/src/main_frame
+RUN cd /go/src/go/valeo/internal/cmd/pre_process && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/src/main_pre
+#RUN cd /go/src/go/valeo/internal/cmd/blur && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /go/src/main

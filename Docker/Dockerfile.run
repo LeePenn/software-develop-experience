@@ -1,5 +1,21 @@
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
+FROM alby117/ubuntu_full
 WORKDIR /root
-ADD main .
-CMD ["./main"]
+ADD main_scan .
+ADD main_copy .
+ADD main_frame .
+ADD main_pre .
+COPY ./valeo/internal/config/ /root/config
+COPY ./tools/ /root/tools
+COPY ./lib/ /root/lib
+RUN chmod -R +x /root/tools
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.backup \
+    && mv /root/lib/sources.list /etc/apt/sources.list
+RUN apt-get -y update \
+    && apt-get -y upgrade 
+RUN apt install -y libopencv-dev python3-opencv 
+RUN apt-get install -y libboost-all-dev
+RUN apt-get clean \
+    && mv /root/lib/libadtfstreaming_261.so /usr/local/lib/ \
+    && mv /root/lib/libccalib_mdf_x64_2-2-12.so /usr/local/lib/
+ADD endpoint.sh .
+ENTRYPOINT ["/bin/sh", "endpoint.sh"]
